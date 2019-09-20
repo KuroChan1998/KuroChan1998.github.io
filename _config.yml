@@ -6,7 +6,7 @@ email: 929703621@qq.com
 description: "Every failure is leading towards success."
 keyword: "CKC, CKC Blog, 酷乐酱的博客, KuroChan1998, KuroChan, CyborgKuroChan, 金之贇, JAVA"
 url: "http://kurochan1998.github.io"          # your host, for absolute URL
-baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
+baseurl: "/blob"      # for example, 'blog' if your blog hosted on 'host/blog'
 github_repo: "https://github.com/kurochan1998/kurochan1998.github.io.git" # you code repository
 
 # Sidebar settings
