@@ -1,0 +1,146 @@
+I"B(<h1 id="从源码解析spring-bean的生命周期">从源码解析Spring Bean的生命周期</h1>
+
+<p><img src="https://images2015.cnblogs.com/blog/937513/201605/937513-20160507202024015-234747937.png" alt="img" /></p>
+
+<p>扫描——解析——getBean——实例化——自动装配——life callback——proxy</p>
+
+<ol>
+  <li>AnnotationConfigApplicationContext获取bean.class配置，调用父类GenericApplicationContext的构造器</li>
+  <li>GenericBeanDefinition(BeanDefinition)存bean的信息，可以通过postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)方法修改bean的属性</li>
+</ol>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyBeanFactoryPostProcessor</span> <span class="kd">implements</span> <span class="nc">BeanFactoryPostProcessor</span> <span class="o">{</span>
+	<span class="nd">@Override</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">postProcessBeanFactory</span><span class="o">(</span><span class="nc">ConfigurableListableBeanFactory</span> <span class="n">beanFactory</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">BeansException</span> <span class="o">{</span>
+		<span class="nc">GenericBeanDefinition</span> <span class="n">beanDefinition</span><span class="o">=</span> <span class="o">(</span><span class="nc">GenericBeanDefinition</span><span class="o">)</span> <span class="n">beanFactory</span><span class="o">.</span><span class="na">getBeanDefinition</span><span class="o">(</span><span class="s">"userDao"</span><span class="o">);</span>
+		<span class="n">beanDefinition</span><span class="o">.</span><span class="na">setBeanClass</span><span class="o">(</span><span class="nc">StudentDao</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<ol>
+  <li>然后将BeanDefinition中的信息put Map</li>
+</ol>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="cm">/** Map from serialized id to factory instance */</span>
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Reference</span><span class="o">&lt;</span><span class="nc">DefaultListableBeanFactory</span><span class="o">&gt;&gt;</span> <span class="n">serializableFactories</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ConcurrentHashMap</span><span class="o">&lt;&gt;(</span><span class="mi">8</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p><img src="D:\CDesktop\Engineering\java\面试\ssmStudy\Snipaste_2019-09-17_17-54-52.jpg" alt="Snipaste_2019-09-17_17-54-52" /></p>
+
+<ol>
+  <li>开始实例化单例对象过程：</li>
+</ol>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>				<span class="c1">// Instantiate all remaining (non-lazy-init) singletons.</span>
+				<span class="c1">//实例化单例对象</span>
+				<span class="n">finishBeanFactoryInitialization</span><span class="o">(</span><span class="n">beanFactory</span><span class="o">);</span>
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        <span class="c1">// Instantiate all remaining (non-lazy-init) singletons.</span>
+        <span class="c1">//实例化所有单例对象</span>
+        <span class="n">beanFactory</span><span class="o">.</span><span class="na">preInstantiateSingletons</span><span class="o">();</span>
+</code></pre></div></div>
+
+<p>getBean(beanName);</p>
+
+<p>调用doGetBean( );</p>
+
+<p>其中singletonObjects这个Map类型就是<strong>所谓的bean容器</strong>！！！！它也可以称作<strong>单例池</strong></p>
+
+<p><img src="D:\CDesktop\Engineering\java\面试\ssmStudy\Snipaste_2019-09-17_22-07-59.jpg" alt="Snipaste_2019-09-17_22-07-59" /></p>
+
+<p>​	在初始化配置的时候就在池中创造这个bean，再getBean的时候直接调用getSingleton()从池中取（第一次调用）</p>
+
+<p><img src="D:\CDesktop\Engineering\java\面试\ssmStudy\Snipaste_2019-09-17_22-35-38.jpg" alt="Snipaste_2019-09-17_22-35-38" /></p>
+
+<p>doGetBean方法中第二次调用getSingleton()</p>
+
+<p><img src="D:\CDesktop\Engineering\java\面试\ssmStudy\Snipaste_2019-09-17_22-35-38.jpg" alt="Snipaste_2019-09-17_22-35-38" /></p>
+
+<ol>
+  <li>
+    <p>Initialization callbacks</p>
+
+    <p>initializeBean()方法中完成</p>
+
+    <p><img src="D:\CDesktop\Engineering\java\面试\ssmStudy\Snipaste_2019-09-18_13-44-44.jpg" alt="Snipaste_2019-09-18_13-44-44" /></p>
+  </li>
+</ol>
+
+<ul>
+  <li>
+    <p>@PostConstruct（先）</p>
+
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="nd">@PostConstruct</span>
+	<span class="kd">public</span> <span class="kt">void</span>  <span class="nf">init</span><span class="o">(){</span>
+		<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"life callback"</span><span class="o">);</span>
+	<span class="o">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>init-method=”init”</p>
+
+    <div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">"exampleInitBean"</span> <span class="na">class=</span><span class="s">"examples.ExampleBean"</span> <span class="na">init-method=</span><span class="s">"init"</span><span class="nt">/&gt;</span>
+</code></pre></div>    </div>
+
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ExampleBean</span> <span class="o">{</span>
+  
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// do some initialization work</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>implements InitializingBean（后）</p>
+
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AnotherExampleBean</span> <span class="kd">implements</span> <span class="nc">InitializingBean</span> <span class="o">{</span>
+  
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">afterPropertiesSet</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// do some initialization work</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<ol>
+  <li>
+    <p>BeanPostProcessor后置处理器（在springbean初始化过程中共有9个！如resolveBeforeInstantiation）</p>
+
+    <p>循环 依赖解决也是通过后置处理器完成的</p>
+
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyBeanPostProcessor</span> <span class="kd">implements</span> <span class="nc">BeanPostProcessor</span> <span class="o">{</span>
+	<span class="cm">/**
+	 * Initialization callbacks前调用，这是第七个后置处理器
+	 **/</span>
+	<span class="nd">@Override</span>
+	<span class="kd">public</span> <span class="nc">Object</span> <span class="nf">postProcessBeforeInitialization</span><span class="o">(</span><span class="nc">Object</span> <span class="n">bean</span><span class="o">,</span> <span class="nc">String</span> <span class="n">beanName</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">BeansException</span> <span class="o">{</span>
+		<span class="k">if</span> <span class="o">(</span><span class="n">beanName</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">"userDao"</span><span class="o">)){</span>
+			<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">beanName</span><span class="o">+</span><span class="s">" postProcessBeforeInitialization"</span><span class="o">);</span>
+		<span class="o">}</span>
+		<span class="k">return</span> <span class="n">bean</span><span class="o">;</span>
+	<span class="o">}</span>
+   
+	<span class="cm">/**
+	 * Initialization callbacks后调用，这是第八次调用处理器
+	 **/</span>
+	<span class="nd">@Override</span>
+	<span class="kd">public</span> <span class="nc">Object</span> <span class="nf">postProcessAfterInitialization</span><span class="o">(</span><span class="nc">Object</span> <span class="n">bean</span><span class="o">,</span> <span class="nc">String</span> <span class="n">beanName</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">BeansException</span> <span class="o">{</span>
+		<span class="k">if</span> <span class="o">(</span><span class="n">beanName</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">"userDao"</span><span class="o">))</span> <span class="o">{</span>
+			<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">beanName</span> <span class="o">+</span> <span class="s">" postProcessAfterInitialization"</span><span class="o">);</span>
+		<span class="o">}</span>
+		<span class="k">return</span> <span class="n">bean</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>使用吧。。。</p>
+  </li>
+</ol>
+
+:ET
