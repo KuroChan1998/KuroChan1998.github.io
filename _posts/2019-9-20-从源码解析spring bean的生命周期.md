@@ -15,7 +15,7 @@ tags:
 
 # 从源码解析Spring Bean的生命周期
 
-![img]({{site.baseurl}}/img/mdimg/937513-20160507202024015-234747937.png)
+![img](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/937513-20160507202024015-234747937.png?raw=true)
 
 > 扫描——解析——getBean——实例化——自动装配——life callback——proxy
 
@@ -40,7 +40,7 @@ public class MyBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 	private static final Map<String, Reference<DefaultListableBeanFactory>> serializableFactories = new ConcurrentHashMap<>(8);
 ```
 
-![Snipaste_2019-09-17_17-54-52.jpg]({{site.baseurl}}/img/mdimg/Snipaste_2019-09-17_17-54-52.jpg?raw=true)
+![Snipaste_2019-09-17_17-54-52.jpg](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-17_17-54-52.jpg?raw=true)
 
 4. 开始实例化单例对象过程：
 
