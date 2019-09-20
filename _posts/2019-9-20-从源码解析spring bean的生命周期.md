@@ -3,7 +3,7 @@ layout:     post
 title:      Spring Bean的生命周期
 subtitle:   从源码来解析spring bean的一生 
 date:       2019-09-20
-author:     BY
+author:     Kuro
 header-img: img/tag-bg.jpg
 catalog: true
 tags:
