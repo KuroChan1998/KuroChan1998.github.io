@@ -1,5 +1,5 @@
 username = "KuroChan1998" # GitHub 用户名
-new_token = "xxxxxxx"  # GitHub Token
+new_token = "edaeecef93ce618af23ee9863b5554af1c12c6e5"  # GitHub Token
 repo_name = "github-comments-repo" # 存放 issues
 sitemap_url = "https://draveness.me/sitemap.xml" # sitemap
 kind = "Gitalk" # "Gitalk" or "gitment"
