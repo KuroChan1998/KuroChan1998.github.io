@@ -147,3 +147,9 @@ doGetBean方法中第二次调用getSingleton()
 
 8. 使用吧。。。
 
+
+
+## 参考
+
+[https://www.bilibili.com/video/av60575964](https://www.bilibili.com/video/av60575964)
+

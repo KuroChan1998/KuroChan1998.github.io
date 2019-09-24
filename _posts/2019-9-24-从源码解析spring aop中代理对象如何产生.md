@@ -18,7 +18,7 @@ tags:
 
 # Spring AOP源码分析——代理对象如何产生
 
-```JAVA
+```java
 public static void main(String[] args) {
     AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
 
@@ -154,6 +154,6 @@ createProxy方法完成代理返回**proxy**！！！
 
 ## 参考
 
-https://www.bilibili.com/video/av64012960
+[https://www.bilibili.com/video/av64012960](https://www.bilibili.com/video/av64012960)
 
-https://shimo.im/docs/Nj0bcFUy3SYyYnbI/read
+[https://shimo.im/docs/Nj0bcFUy3SYyYnbI/read](https://shimo.im/docs/Nj0bcFUy3SYyYnbI/read)
