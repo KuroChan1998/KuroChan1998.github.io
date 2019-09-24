@@ -71,7 +71,7 @@ getBean(beanName);
 
 doGetBean方法中第二次调用getSingleton()
 
-![Snipaste_2019-09-17_22-35-38](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-17_22-35-38.jpg?raw=true)
+![Snipaste_2019-09-17_22-35-38](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-18_09-08-12.jpg?raw=true)
 
 5. Initialization callbacks
 
