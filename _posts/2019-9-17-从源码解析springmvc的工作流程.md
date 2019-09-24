@@ -21,7 +21,7 @@ tags:
 
 ## 源码解析
 
-DispatcherServlet类核心方法doDispatch
+*DispatcherServlet*类核心方法`doDispatch`
 
 ```java
 protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -38,29 +38,29 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
 }
 ```
 
-getHandler(processedRequest);获取当前request的处理器映射器
+`getHandler(processedRequest)`;获取当前request的处理器映射器
 
 ![Snipaste_2019-09-19_12-54-19.jpg](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_12-54-19.jpg?raw=true)
 
-在handlerMappings这个列表的所有handlers中有多个HandlerMapping，起中两个关键的是用来存放以beanName形式和@Controller形式注册的Controller，**参见下文Controller的2大类型**！！！！
+在*handlerMappings*这个列表的所有*handlers*中有多个*HandlerMapping*，起中两个关键的是用来存放以beanName形式和`@Controller`形式注册的Controller，**参见下文Controller的2大类型**！！！！
 
-在gethandler过程中，requestMapping中的请求路径参数被存到了**lookupPath**中
+在`gethandler`过程中，requestMapping中的请求路径参数被存到了*lookupPath*中
 
 ![Snipaste_2019-09-19_15-01-57](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_15-01-57.jpg?raw=true)
 
-gethandler方法返回的HandlerExecutionChain中有我们加了注解的的ViewController!
+`gethandler`方法返回的*HandlerExecutionChain*中有我们加了注解的的ViewController!
 
 ![Snipaste_2019-09-19_13-03-20](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_13-03-20.jpg?raw=true)
 
-getHandlerAdapter()获取当前request下得到的handlers返回处理器适配器
+`getHandlerAdapter()`获取当前request下得到的*handlers*返回处理器适配器
 
 ![Snipaste_2019-09-19_13-12-00](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_13-12-00.jpg?raw=true)
 
-- handler和adaptor都是在DispatcherServlet.properties中获取，springboot就是基于这里拓展handlerMappings
+- *handler*和*adaptor*都是在DispatcherServlet.properties中获取，springboot就是基于这里拓展*handlerMappings*
 
   ![Snipaste_2019-09-19_13-15-18](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_13-15-18.jpg?raw=true)
 
-- 注意！：在**support()**方法中会判断handler的特性用来返回合适的adaptor，这里support方法有多种判断方式，如对@Controller注解的Controller中的方法对用RequestHandlerMapping对应的support实现来检查，对beanName形式的也有其他类实现的support方法检查
+- 注意！：在***support()***方法中会判断*handler*的特性用来返回合适的<u>adaptor</u>，这里support方法有多种判断方式，如对`@Controller`注解的Controller中的方法对用*RequestHandlerMapping*对应的support实现来检查，对beanName形式的也有其他类实现的support方法检查
 
   ![Snipaste_2019-09-19_15-22-53](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_15-22-53.jpg?raw=true)
 
@@ -76,13 +76,13 @@ getHandlerAdapter()获取当前request下得到的handlers返回处理器适配�
        @Component("/BeanNameController")
        ```
 
-       注意：在getHandler方法中的handlerMappings中有两个HandlerMapping，这里BeanNameUrlHandlerMapping中存放了我们通过spring组件形式注册的Controller!!这里存储的是**map结构**！！！
+       注意：在`getHandler`方法中的*handlerMappings*中有两个*HandlerMapping*，这里*BeanNameUrlHandlerMapping*中存放了我们通过spring组件形式注册的Controller!!这里存储的是**map结构**！！！
 
        ![Snipaste_2019-09-19_14-50-10](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_14-50-10.jpg?raw=true)
 
-    2. @Controller注解
+    2. `@Controller`注解
 
-       RequestHandlerMapping中存放了@Controller注解注册的Controller
+       *RequestHandlerMapping*中存放了`@Controller`注解注册的Controller
 
        ![Snipaste_2019-09-19_14-47-11](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_14-47-11.jpg?raw=true)
 
@@ -115,9 +115,9 @@ getHandlerAdapter()获取当前request下得到的handlers返回处理器适配�
        }
        ```
 
-调用handle()执行Controller方法
+调用`handle()`执行Controller方法
 
-- 这里以beanName类型Controller为例，通过强转后直接调用我们的Controller中重写的**handleRequest**方法！！！！这样意味着每个类只能有一个方法调用！
+- 这里以beanName类型Controller为例，通过强转后直接调用我们的Controller中重写的***handleRequest***方法！！！！这样意味着每个类只能有一个方法调用！
 
   ![Snipaste_2019-09-19_15-40-07](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_15-40-07.jpg?raw=true)
 
@@ -125,7 +125,7 @@ getHandlerAdapter()获取当前request下得到的handlers返回处理器适配�
 
   通过反射处理Controller中的参数和方法
 
-  在RequestMappingHandlerAdapter中invokeHandleMethod方法中的invokeAndHandle方法
+  在*RequestMappingHandlerAdapter*中`invokeHandleMethod`方法中的`invokeAndHandle`方法
 
   ```java
   	private ModelAndView invokeHandleMethod(HttpServletRequest request,
@@ -135,7 +135,7 @@ getHandlerAdapter()获取当前request下得到的handlers返回处理器适配�
   	}
   ```
 
-  其中调用了getArgumentResolver。argumentResolverCache为变量缓存池
+  其中调用了`getArgumentResolver`。*argumentResolverCache*为变量缓存池
 
   ```java
   private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parameter) {
@@ -157,7 +157,7 @@ getHandlerAdapter()获取当前request下得到的handlers返回处理器适配�
 
   （注意java1.8之前由于无法获取函数变量名称，所以springmvc是通过字节码获得变量名的）
 
-  InvocableHandlerMethod中的getMethodArgumentValues方法中获取入参user对象的值，通过调用resolveArgument存在args[]数组中
+  *InvocableHandlerMethod*中的`getMethodArgumentValues`方法中获取入参user对象的值，通过调用`resolveArgument`存在args[]数组中
 
   ![Snipaste_2019-09-19_18-45-40](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_18-45-40.jpg?raw=true)
 
@@ -205,7 +205,7 @@ getHandlerAdapter()获取当前request下得到的handlers返回处理器适配�
   }
   ```
 
-  SpringServletContainerInitializer类onStartup方法即完成初始化
+  *SpringServletContainerInitializer*类`onStartup`方法即完成初始化
 
   ```java
   //扫描所有实现WebApplicationInitializer接口的类，将其封装到onStartup方法中的 Set<Class<?>> webAppInitializerClasses中
