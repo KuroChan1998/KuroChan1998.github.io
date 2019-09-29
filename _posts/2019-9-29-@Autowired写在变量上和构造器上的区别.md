@@ -10,8 +10,7 @@ tags:
     - java
     - spring
     - @Autowired
-	- spring ioc
-	- di
+    - spring ioc
 
 ---
 
