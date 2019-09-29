@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      @Autowired写在变量上和构造器上的区别
-subtitle:   看书的时候正好看到@Autowired写构造器上的用法，而平时一直使用加在变量上，所以查阅了以下资料
+title:      Spring Bean的生命周期
+subtitle:   从源码来解析spring bean的一生 
 date:       2019-09-29
 author:     Kuro
 header-img: img/tag-bg.jpg
@@ -9,49 +9,147 @@ catalog: true
 tags:
     - java
     - spring
-    - spring ioc
-    - @Autowired
-
+    - spring bean生命周期
+    - 源码解析
 
 ---
 
-# @Autowired写在变量上和构造器上的区别
+# 从源码解析Spring Bean的生命周期
+
+![img](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/937513-20160507202024015-234747937.png?raw=true)
+
+> 扫描——解析——getBean——实例化——自动装配——life callback——proxy
+
+1. *AnnotationConfigApplicationContext*获取bean.class配置，调用父类*GenericApplicationContext*的构造器
+2. `GenericBeanDefinition(BeanDefinition)`存bean的信息，可以通过`postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)`方法修改bean的属性
 
 ```java
-public class Test{
-    @Autowired
-    private A a;
- 
-    private final String prefix = a.getExcelPrefix();
- 
-	........
+@Component
+public class MyBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
+	@Override
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+		GenericBeanDefinition beanDefinition= (GenericBeanDefinition) beanFactory.getBeanDefinition("userDao");
+		beanDefinition.setBeanClass(StudentDao.class);
+	}
 }
 ```
 
-这种方式会报错。
-
-这样写就不报错了
+3. 然后将*BeanDefinition*中的信息put Map
 
 ```java
-public class Test{
-    private final String prefix;
- 
-    @Autowired
-    public Test(A a) {
-        this.prefix= a.getExcelPrefix();
-    }
- 
-........
-}
+	/** Map from serialized id to factory instance */
+	private static final Map<String, Reference<DefaultListableBeanFactory>> serializableFactories = new ConcurrentHashMap<>(8);
 ```
 
-其实这两种方式都可以使用，但报错的原因是**加载顺**序的问题，@autowired写在变量上的注入要等到类完全加载完，才会将相应的bean注入，而变量是在加载类的时候按照相应顺序加载的，所以**变量的加载要早于@autowired变量的加载**，那么给变量**prefix 赋值的时候所使用的a，其实还没有被注入**，所以报空指针，而使用构造器就在加载类的时候将a加载了，这样在内部使用a给prefix 赋值就完全没有问题。
+![Snipaste_2019-09-17_17-54-52.jpg](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-17_17-54-52.jpg?raw=true)
 
-如果不适用构造器，那么也可以不给prefix 赋值，而是在接下来的代码使用的地方，通过a.getExcelPrefix()进行赋值，这时的对a的使用是在类完全加载之后，即a被注入了，所以也是可以的。
+4. 开始实例化单例对象过程：
 
-总之，@Autowired一定**要等本类构造完成**后，才能从外部引用设置进来。所以**@Autowired的注入时间一定会晚于构造函数的执行时间**。
+```java
+				// Instantiate all remaining (non-lazy-init) singletons.
+				//实例化单例对象
+				finishBeanFactoryInitialization(beanFactory);
+```
+
+```java
+        // Instantiate all remaining (non-lazy-init) singletons.
+        //实例化所有单例对象
+        beanFactory.preInstantiateSingletons();
+```
+
+`getBean(beanName);`
+
+调用`doGetBean( );`
+
+其中*singletonObjects*这个Map类型就是**所谓的bean容器**！！！！它也可以称作**单例池**
+
+![Snipaste_2019-09-17_22-07-59](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-17_22-07-59.jpg?raw=true)
+
+​	在初始化配置的时候就在池中创造这个bean，再getBean的时候直接调用`getSingleton()`从池中取（第一次调用）
+
+![Snipaste_2019-09-17_22-35-38](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-17_22-35-38.jpg?raw=true)
+
+`doGetBean`方法中第二次调用`getSingleton()`
+
+![Snipaste_2019-09-17_22-35-38](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-18_09-08-12.jpg?raw=true)
+
+5. Initialization callbacks
+
+   `initializeBean()`方法中完成
+
+   ![Snipaste_2019-09-18_13-44-44](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-18_13-44-44.jpg?raw=true)
+
+- @PostConstruct（先）
+
+  ```java
+  	@PostConstruct
+  	public void  init(){
+  		System.out.println("life callback");
+  	}
+  ```
+
+- init-method="init"
+
+  ```xml
+  <bean id="exampleInitBean" class="examples.ExampleBean" init-method="init"/>
+  ```
+
+  ```java
+  public class ExampleBean {
+  
+      public void init() {
+          // do some initialization work
+      }
+  }
+  ```
+
+- implements InitializingBean（后）
+
+  ```java
+  public class AnotherExampleBean implements InitializingBean {
+  
+      public void afterPropertiesSet() {
+          // do some initialization work
+      }
+  }
+  ```
+
+7. *BeanPostProcessor*后置处理器（在springbean初始化过程中共有9个！如*resolveBeforeInstantiation*）
+
+   循环 依赖解决也是通过后置处理器完成的
+
+   ```java
+   @Component
+   public class MyBeanPostProcessor implements BeanPostProcessor {
+   	/**
+   	 * Initialization callbacks前调用，这是第七个后置处理器
+   	 **/
+   	@Override
+   	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+   		if (beanName.equals("userDao")){
+   			System.out.println(beanName+" postProcessBeforeInitialization");
+   		}
+   		return bean;
+   	}
+   
+   	/**
+   	 * Initialization callbacks后调用，这是第八次调用处理器
+   	 **/
+   	@Override
+   	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+   		if (beanName.equals("userDao")) {
+   			System.out.println(beanName + " postProcessAfterInitialization");
+   		}
+   		return bean;
+   	}
+   }
+   ```
+
+8. 使用吧。。。
+
+
 
 ## 参考
 
-[https://blog.csdn.net/qq_17312239/article/details/80819507](https://blog.csdn.net/qq_17312239/article/details/80819507)
+[https://www.bilibili.com/video/av60575964](https://www.bilibili.com/video/av60575964)
 
