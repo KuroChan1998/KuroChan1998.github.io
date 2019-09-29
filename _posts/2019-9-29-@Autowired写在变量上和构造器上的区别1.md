@@ -9,11 +9,11 @@ catalog: true
 tags:
     - java
     - spring
+    - @Autowired
     - spring ioc
-    - 源码解析
 
 ---
-
+	
 # @Autowired写在变量上和构造器上的区别
 
 ```java
