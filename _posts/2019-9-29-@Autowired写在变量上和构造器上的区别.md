@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      Spring Bean的生命周期
-subtitle:   从源码来解析spring bean的一生 
+title:      @Autowired写在变量上和构造器上的区别
+subtitle:   正好在书上看到@Autowired写在构造器上的用法，平时主要都加在变量上，于是查阅一下资料
 date:       2019-09-29
 author:     Kuro
 header-img: img/tag-bg.jpg
@@ -9,8 +9,8 @@ catalog: true
 tags:
     - java
     - spring
-    - spring bean生命周期
-    - 源码解析
+    - spring ioc
+    - @Autowired
 
 ---
 
