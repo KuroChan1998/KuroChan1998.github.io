@@ -2,7 +2,7 @@
 layout:     post
 title:      @Autowired写在变量上和构造器上的区别
 subtitle:   看书的时候正好看到@Autowired写构造器上的用法，而平时一直使用加在变量上，所以查阅了以下资料
-date:       2019-09-28
+date:       2019-09-29
 author:     Kuro
 header-img: img/post-bg-re-vs-ng2.jpg
 catalog: true
@@ -12,6 +12,7 @@ tags:
     - @Autowired
 	- spring ioc
 	- di
+
 ---
 
 # @Autowired写在变量上和构造器上的区别
