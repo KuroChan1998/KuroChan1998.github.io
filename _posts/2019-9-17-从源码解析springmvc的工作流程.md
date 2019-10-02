@@ -21,7 +21,7 @@ tags:
 
 ## 源码解析
 
-*DispatcherServlet*类核心方法`doDispatch`
+*DispatcherServlet*类核心方法`doDispatch`（[为什么doDispatch方法是springmvc处理请求的入口？](#why_doDispatch)）
 
 ```java
 protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -42,7 +42,7 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
 
 ![Snipaste_2019-09-19_12-54-19.jpg](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_12-54-19.jpg?raw=true)
 
-在*handlerMappings*这个列表的所有*handlers*中有多个*HandlerMapping*，起中两个关键的是用来存放以beanName形式和`@Controller`形式注册的Controller，**参见下文Controller的2大类型**！！！！
+在*handlerMappings*这个列表的所有*handlers*中有多个*HandlerMapping*，起中两个关键的——*BeanNameUrlHandlerMapping*、*RequestMappingHandlerMapping*（[这两个*HandlerMapping*为什么在初始化时就有了？](#why_handlerMapping_init))是用来存放以beanName形式和`@Controller`形式注册的Controller，**参见下文Controller的2大类型**！！！！
 
 在`gethandler`过程中，requestMapping中的请求路径参数被存到了*lookupPath*中
 
@@ -56,11 +56,24 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
 
 ![Snipaste_2019-09-19_13-12-00](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_13-12-00.jpg?raw=true)
 
-- *handler*和*adaptor*都是在DispatcherServlet.properties中获取，springboot就是基于这里拓展*handlerMappings*
+- <span id='why_handlerMapping_init'>springmvc自己的*handler*和*adaptor*都是在DispatcherServlet.properties中获取</span>，springboot就是基于这里拓展*handlerMappings*
 
-  ![Snipaste_2019-09-19_13-15-18](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_13-15-18.jpg?raw=true)
+  ```properties
+  org.springframework.web.servlet.HandlerMapping=org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping,\
+  	org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
+  
+  org.springframework.web.servlet.HandlerAdapter=org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter,\
+  	org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter,\
+  	org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
+  ```
 
-- 注意！：在***support()***方法中会判断*handler*的特性用来返回合适的<u>adaptor</u>，这里support方法有多种判断方式，如对`@Controller`注解的Controller中的方法对用*RequestHandlerMapping*对应的support实现来检查，对beanName形式的也有其他类实现的support方法检查
+  - BeanNameUrlHandlerMapping：存放以beanName形式注册的Controller
+  - DefaultAnnotationHandlerMapping：存放通过`@Controller`、`@Componet`注解形式存放的Controller
+  - HttpRequestHandlerAdapter：对应处理implements HttpRequestHandler类型实现的Controller
+  - SimpleControllerHandlerAdapter：对应处理implements Controller类型实现的Controller
+  - AnnotationMethodHandlerAdapter：对应处理使用`@Controller`等注解实现的Controller
+
+- 注意！：在***support()***方法中会判断*handler*的特性用来返回合适的adaptor，这里support方法有多种判断方式，如对`@Controller`注解的Controller中的方法对用*RequestHandlerMapping*对应的support实现来检查，对beanName形式的也有其他类实现的support方法检查，见上文。
 
   ![Snipaste_2019-09-19_15-22-53](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_15-22-53.jpg?raw=true)
 
@@ -90,7 +103,7 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
 
     1. @Controller
 
-    2. implements Controller
+    2. implements Controller（属于beanName类型）
 
        ```java
        @Component("/BeanNameController")
@@ -103,7 +116,7 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
        }
        ```
 
-    3. implements HttpRequestHandler
+    3. implements HttpRequestHandler（属于beanName类型，无返回值）
 
        ```java
        @Component("/HandleController")
@@ -115,9 +128,9 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
        }
        ```
 
-调用`handle()`执行Controller方法
+调用`handle()`（根据不同类型的控制器的实现方式决定合适的adaptor，调用对应adaptor中的`handle()`方法）执行我们**控制层的Controller方法**返回ModelAndView
 
-- 这里以beanName类型Controller为例，通过强转后直接调用我们的Controller中重写的***handleRequest***方法！！！！这样意味着每个类只能有一个方法调用！
+- 这里以beanName类型implements Controller为例，通过强转后直接调用我们的implements Controller的类中重写的***handleRequest***方法！！！！这样意味着每个类只能有一个方法调用！
 
   ![Snipaste_2019-09-19_15-40-07](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_15-40-07.jpg?raw=true)
 
@@ -165,8 +178,6 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
 
   ![Snipaste_2019-09-19_18-47-46](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-09-19_18-47-46.jpg?raw=true)
 
-
-
 ## 简略版流程：
 
 1. 用户发送请求至前端控制器**DispatcherServlet**
@@ -181,7 +192,9 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
 10. DispatcherServlet对View进行渲染视图（即将模型数据填充至视图中）。
 11. DispatcherServlet响应用户
 
-## 附：springmvc初始化的两种方式
+## 附：
+
+### springmvc初始化的两种方式
 
 - java
 
@@ -256,7 +269,62 @@ protected void doDispatch(HttpServletRequest request, HttpServletResponse respon
   </web-app>
   ```
 
-## 参考
+### <span id='why_doDispatch'>为什么doDispatch方法是springmvc处理请求的入口</span>
+
+- *DispatcherServlet*继承关系图
+
+  ![Snipaste_2019-10-02_09-36-12](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2019-10-02_09-36-12.jpg?raw=true)
+
+*DispatcherServlet*的父类*FrameworkServlet*重写了底层HttpServlet的service()方法
+
+```java
+	@Override
+	protected void service(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		HttpMethod httpMethod = HttpMethod.resolve(request.getMethod());
+		if (httpMethod == HttpMethod.PATCH || httpMethod == null) {
+			processRequest(request, response);
+		}
+		else {
+			super.service(request, response);
+		}
+	}
+```
+
+`processRequest(request, response)`调用了`doService()`方法
+
+```java
+	...
+	try {
+		doService(request, response);
+    }
+    catch (ServletException ex) {
+        failureCause = ex;
+        throw ex;
+    }
+	...
+```
+
+其中`doService(request, response)`是*FrameworkServlet*的一个抽象方法，由其子类*DispatcherServlet*实现
+
+*DispatcherServlet*的`doService()`方法中调用了`doDispatch(request, response)`！！！
+
+```java
+	@Override
+	protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		try {
+			doDispatch(request, response);
+		}
+		finally {
+			...
+		}
+	}
+```
+
+##### 
+
+参考
 
 [https://www.bilibili.com/video/av32519360?from=search&seid=6662549753567244872](https://www.bilibili.com/video/av32519360?from=search&seid=6662549753567244872)
 
