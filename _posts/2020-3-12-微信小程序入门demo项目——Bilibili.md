@@ -17,4 +17,4 @@ github地址：[https://github.com/KuroChan1998/WX-bilibili-Demo](https://github
 
 微信小程序的一个demo，以bilibili的界面为例。微信小程序这些前端把主后端的我整哭了。下图为运行后的情况：
 
-![Snipaste_2020-03-12_18-22-42](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2020-03-12_18-22-42.jpg)
+![Snipaste_2020-03-12_18-22-42](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2020-03-12_18-22-42.jpg?raw=true)
