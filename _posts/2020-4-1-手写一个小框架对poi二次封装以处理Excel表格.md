@@ -53,7 +53,7 @@ idea中直接导入maven项目即可完成初始构建。
 
 ## DefaultExcel——默认的excel处理类
 
-![Snipaste_2020-04-01_11-20-25](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2020-04-01_11-20-25.png)
+![Snipaste_2020-04-01_11-20-25](https://github.com/KuroChan1998/KuroChan1998.github.io/blob/master/img/mdimg/Snipaste_2020-04-01_11-20-25.png?raw=true)
 
 `DefaultExcel`是处理excel默认类，直接使用`DefaultExcel`或者继承`DefaultExcel`都可以方便的读写excel。它又继承自抽象类`Excel`，该类是核心，实现了大量对poi处理excel二次封装后的方法；`ExcelValidity`接口用于检验表格的合法性；`Resettable`接口用于体现表格各类参数可重置的特性。
 
